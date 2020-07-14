@@ -15,7 +15,7 @@ from keras.preprocessing.image import ImageDataGenerator
 BATCH_SIZE = 8
 IMAGE_SIZE = 224
 SEED = 42
-IMAGE_COUNT = 200#47917
+IMAGE_COUNT = 1000#47917
 
 DATASET_PATH = 'C:\\GlassesDetetion\\data\\'
 MODEL_NAME = 'model.hdf5'
