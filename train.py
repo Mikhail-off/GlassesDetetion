@@ -4,6 +4,7 @@ from skimage.io import imread, imshow
 from skimage.transform import resize
 
 import matplotlib.pyplot as plt
+import cv2
 
 import keras
 from keras.layers import Dense, Flatten, GlobalAveragePooling2D
@@ -14,11 +15,12 @@ from keras.preprocessing.image import ImageDataGenerator
 
 BATCH_SIZE = 8
 IMAGE_SIZE = 224
-SEED = 42
+SEED = 24
 IMAGE_COUNT = 1000#47917
 
 DATASET_PATH = 'C:\\GlassesDetetion\\data\\'
 MODEL_NAME = 'model.hdf5'
+
 
 def normalize_image(img_as_array):
     return (img_as_array - 127.5) / 127.5
@@ -48,8 +50,8 @@ def build_model():
 def train_model(train_data_path):
     train_data_generator = train_generator(train_data_path)
 
-    #model = load_model('model.hdf5')
-    model = build_model()
+    model = load_model('model.hdf5')
+    #model = build_model()
     model.fit_generator(train_data_generator, steps_per_epoch=IMAGE_COUNT, epochs=1)
     model.save(MODEL_NAME)
     return model
