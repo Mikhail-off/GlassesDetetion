@@ -15,12 +15,13 @@ from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 from random import randint
 
-EPOCH_COUNT = 10
+EPOCH_COUNT = 5
 BATCH_SIZE = 16
 IMAGE_SIZE = 224
 SEED = randint(0, 1000)
 IMAGE_COUNT = 3804#47917
 N_CLASSES = 3
+LR = 1e-5
 
 DATASET_PATH = 'C:\\GlassesDetetion\\global_data\\train\\'
 MODEL_NAME = 'model.hdf5'
@@ -52,7 +53,7 @@ def build_model():
 
     model = Model(backbone.input, cur)
 
-    model.compile(optimizer=Adam(learning_rate=1e-4), loss=loss_name, metrics=['accuracy'])
+    model.compile(optimizer=Adam(learning_rate=LR), loss=loss_name, metrics=['accuracy'])
     model.summary()
 
     return model
