@@ -26,8 +26,12 @@ INPUT_SHAPE = (224, 224, 3)
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
-def detect_faces(image):
+
+def detect_faces(image, with_opencv=True):
+    if not(with_opencv):
+        return [image]
     gray_image = cvtColor(image, cv2.COLOR_BGR2GRAY)
+
     faces = face_cascade.detectMultiScale(gray_image, 1.3, 5)
     cropped_faces = []
     for (x, y, w, h) in faces:
@@ -35,13 +39,15 @@ def detect_faces(image):
         cropped_faces.append(face)
     return cropped_faces
 
+
 def classify_face(image, model):
     image = cv2.resize(image, INPUT_SHAPE[:2])
     image = np.array([image]).astype(float)
     image = (image - 127.5) / 127.5
     image = image[:, :, ::-1]
-    image_class = int(model.predict(image)[0] > 0.5)
+    image_class = np.argmax(model.predict(image))
     return image_class
+
 
 def main():
     result = []
@@ -61,11 +67,11 @@ def main():
             continue
         image_count += 1
         
-        faces = detect_faces(image)
+        faces = detect_faces(image, with_opencv=False)
         if len(faces) == 1:
             image_class = classify_face(faces[0], model)
         else:
-            image_class = 2
+            image_class = -1
         time_spent = time() - time_spent
         result.append([image_name, image_class])
         avg_time_per_image += time_spent
@@ -76,6 +82,7 @@ def main():
     
     result = pd.DataFrame(data=result, columns=['name', 'class'])
     result.to_csv(RESULT_FILE_PATH, index=False)
+
 
 if __name__ == '__main__':
     main()

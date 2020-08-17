@@ -13,12 +13,14 @@ from keras.applications.mobilenet_v2 import MobileNetV2
 from keras.optimizers import Adam
 from keras.preprocessing.image import ImageDataGenerator
 
-BATCH_SIZE = 8
+EPOCH_COUNT = 5
+BATCH_SIZE = 16
 IMAGE_SIZE = 224
 SEED = 24
-IMAGE_COUNT = 1000#47917
+IMAGE_COUNT = 3804#47917
+N_CLASSES = 3
 
-DATASET_PATH = 'C:\\GlassesDetetion\\data\\'
+DATASET_PATH = 'C:\\GlassesDetetion\\global_data\\train\\'
 MODEL_NAME = 'model.hdf5'
 
 
@@ -27,9 +29,10 @@ def normalize_image(img_as_array):
 
 
 def train_generator(data_dir):
-    return ImageDataGenerator(preprocessing_function=normalize_image).flow_from_directory(
+    return ImageDataGenerator(preprocessing_function=normalize_image, rotation_range=10,
+                              horizontal_flip=True).flow_from_directory(
         data_dir, batch_size=BATCH_SIZE,
-        class_mode='binary', target_size=(IMAGE_SIZE, IMAGE_SIZE),
+        class_mode='categorical', target_size=(IMAGE_SIZE, IMAGE_SIZE),
         color_mode="rgb", seed=SEED)
 
 
@@ -38,10 +41,12 @@ def build_model():
 
     cur = backbone.output
     cur = GlobalAveragePooling2D()(cur)
-    cur = Dense(1, activation='sigmoid')(cur)
+
+    cur = Dense(N_CLASSES, activation='softmax')(cur)
+    loss_name = 'categorical_crossentropy'
 
     model = Model(backbone.input, cur)
-    model.compile(optimizer=Adam(lr=3e-4), loss='binary_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=Adam(lr=3e-4), loss=loss_name, metrics=['accuracy'])
     model.summary()
 
     return model
@@ -50,9 +55,9 @@ def build_model():
 def train_model(train_data_path):
     train_data_generator = train_generator(train_data_path)
 
-    model = load_model('model.hdf5')
-    #model = build_model()
-    model.fit_generator(train_data_generator, steps_per_epoch=IMAGE_COUNT, epochs=1)
+    #model = load_model('model.hdf5')
+    model = build_model()
+    model.fit_generator(train_data_generator, steps_per_epoch=IMAGE_COUNT // BATCH_SIZE, epochs=EPOCH_COUNT)
     model.save(MODEL_NAME)
     return model
 
