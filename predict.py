@@ -16,6 +16,9 @@ argparser.add_argument("--src_images", "-src", type=str,
                        help="Путь до папки с изображениями")
 argparser.add_argument("--dst_file", "-dst", type=str,
                        help="Путь до файла с результатами")
+argparser.add_argument("--threshold", "-th", type=float,
+                       help="Минимальная уверенность", default=0.0)
+
 
 args = argparser.parse_args()
 
@@ -23,6 +26,7 @@ IMAGES_PATH = args.src_images
 RESULT_FILE_PATH = args.dst_file
 MODEL_NAME = 'model.hdf5'
 INPUT_SHAPE = (224, 224, 3)
+THRESHOLD = args.threshold
 
 face_cascade = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
 
@@ -45,7 +49,10 @@ def classify_face(image, model):
     image = np.array([image]).astype(float)
     image = (image - 127.5) / 127.5
     image = image[:, :, ::-1]
-    image_class = np.argmax(model.predict(image))
+    probs = model.predict([image])[0]
+    image_class = np.argmax(probs)
+    if probs[image_class] < THRESHOLD:
+        image_class = 0
     return image_class
 
 
