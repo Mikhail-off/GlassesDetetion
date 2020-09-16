@@ -3,6 +3,14 @@ import numpy as np
 import os
 from shutil import copyfile
 from tqdm import tqdm
+import argparse
+
+argparser = argparse.ArgumentParser()
+argparser.add_argument("--src_images", "-src", type=str,
+                       help="Путь до папки с датасетом")
+argparser.add_argument("--dst_file", "-dst", type=str,
+                       help="Путь до папки с датасетом для обучения")
+
 
 RAW_DATA_PATH = 'C:\\GlassesDetetion\\raw_data\\'
 DATA_PATH = 'C:\\GlassesDetetion\\data\\'
