@@ -4,17 +4,18 @@ import os
 from PIL import Image
 from tqdm import tqdm
 import argparse
+from shutil import copyfile
 
 argparser = argparse.ArgumentParser()
-argparser.add_argument("--src_dataset", "-src", type=str,
+argparser.add_argument("--src_dataset", "-src", type=str, required=True,
                        help="Путь до папки с датасетом")
-argparser.add_argument("--dst_dataset", "-dst", type=str,
-                       help="Путь до папки с датасетом для обучения")
-argparser.add_argument("--train_rate", "-tr", type=float, default=True,
+argparser.add_argument("--dst_dataset", "-dst", type=str, required=True,
+                       help="Путь до итоговой папки с датасетом")
+argparser.add_argument("--train_rate", "-tr", type=float, default=0.7,
                        help="Процент изображений для обучения")
 argparser.add_argument("--crop", action='store_true',
                        help="Нужно ли обрезать картинку")
-argparser.add_argument("--n_classes", type=int,
+argparser.add_argument("--n_classes", type=int, required=True,
                        help="Сколько классов в датаете")
 
 args = argparser.parse_args()
@@ -71,11 +72,25 @@ def main():
     val_right = len(image_names)
     val_image_names = image_names[val_left:val_right]
 
-    for name, cur_image_names in zip(['Train', 'Test', 'Validation'],
-                                     [train_image_names, test_image_names, val_image_names]):
+    for name, cur_image_names in zip(['Train', 'Test'],
+                                     [train_image_names, test_image_names]):
         dataset_path = os.path.join(TRAIN_DATASET_PATH, name)
         form_dataset(cur_image_names, dataset_path)
 
+    val_dataset_path = os.path.join(TRAIN_DATASET_PATH, 'Validation')
+    os.makedirs(os.path.join(val_dataset_path, 'Image'))
+    os.makedirs(os.path.join(val_dataset_path, 'Markup'))
+    for image_name in val_image_names:
+        name, ext = os.path.splitext(image_name)
+        markup_name = name + MARKUP_EXT
+
+        src_image_path = os.path.join(os.path.join(RAW_DATASET_PATH, 'Image', image_name))
+        dst_image_path = os.path.join(os.path.join(val_dataset_path, 'Image', image_name))
+        src_markup_path = os.path.join(os.path.join(RAW_DATASET_PATH, 'Markup', markup_name))
+        dst_markup_path = os.path.join(os.path.join(val_dataset_path, 'Markup', markup_name))
+
+        copyfile(src_image_path, dst_image_path)
+        copyfile(src_markup_path, dst_markup_path)
 
 if __name__ == '__main__':
     main()
