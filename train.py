@@ -10,7 +10,7 @@ import keras
 from keras.layers import Dense, Flatten, GlobalAveragePooling2D, Dropout, LeakyReLU
 from keras.models import Model, load_model
 from keras.applications.mobilenet_v2 import MobileNetV2
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD
 from keras.preprocessing.image import ImageDataGenerator
 import argparse
 
@@ -80,7 +80,7 @@ def test_generator(data_dir):
 
 def build_model():
     backbone = MobileNetV2((IMAGE_SIZE, IMAGE_SIZE, 3), alpha=0.35, include_top=False)
-    #backbone.trainable = False
+    backbone.trainable = True
 
     cur = backbone.output
     cur = GlobalAveragePooling2D()(cur)
@@ -98,7 +98,7 @@ def build_model():
     cur = Dense(N_CLASSES, activation=act_f)(cur)
 
     model = Model(backbone.input, cur)
-    model.compile(optimizer=Adam(lr=LR), loss=loss_f, metrics=['accuracy'])
+    model.compile(optimizer=SGD(lr=LR, momentum=0.9), loss=loss_f, metrics=['accuracy'])
     return model
 
 
@@ -113,7 +113,8 @@ def train_model(train_data_path, test_data_path, model):
 
 
 if __name__ == '__main__':
-    os.makedirs(LOGS_DIR, exist_ok=True)
+    if LOGS_DIR is not None:
+        os.makedirs(LOGS_DIR, exist_ok=True)
     model = build_model()
     if args.continue_from_model is not None:
         model.load_weights(LOADING_MODEL)
