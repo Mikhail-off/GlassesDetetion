@@ -12,14 +12,14 @@ import argparse
 argparser = argparse.ArgumentParser()
 argparser.add_argument("--images_path", "-ip", type=str, required=True,
                        help="Путь до папки с изображениями")
-argparser.add_argument("--markup_path", "-mp", type=str, default=None,
-                       help="Путь до папки с разметкой. Если не указано, то метрики не считаются")
+argparser.add_argument("--markup_path", "-mp", type=str, required=True,
+                       help="Путь до папки с разметкой")
 argparser.add_argument("--model_path", "-m", type=str, required=True,
                        help="Путь до тестируемой модели")
 argparser.add_argument("--result_path", "-rp", type=str, required=True,
                        help="Путь до результирующей разметки")
 argparser.add_argument("--metrics", action="store_true",
-                       help="Нужно ли считать метрики")
+                       help="Нужно ли считать метрики. В таком случае нужно быть уверенным в колонке с классом")
 
 # TODO
 """
