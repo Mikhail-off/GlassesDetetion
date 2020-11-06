@@ -1,3 +1,5 @@
+from argparse import ArgumentParser
+
 from PIL import Image
 import numpy as np
 import pandas as pd
@@ -9,7 +11,7 @@ from sklearn.metrics import classification_report
 
 import argparse
 
-argparser = argparse.ArgumentParser()
+argparser: ArgumentParser = argparse.ArgumentParser()
 argparser.add_argument("--images_path", "-ip", type=str, required=True,
                        help="Путь до папки с изображениями")
 argparser.add_argument("--markup_path", "-mp", type=str, required=True,
@@ -18,6 +20,8 @@ argparser.add_argument("--model_path", "-m", type=str, required=True,
                        help="Путь до тестируемой модели")
 argparser.add_argument("--result_path", "-rp", type=str, required=True,
                        help="Путь до результирующей разметки")
+argparser.add_argument("--threshold", "-th", type=float, default=0.0,
+                       help="Минимальная вероятность, после которой объект считается задетекченным")
 argparser.add_argument("--metrics", action="store_true",
                        help="Нужно ли считать метрики. В таком случае нужно быть уверенным в колонке с классом")
 
@@ -34,6 +38,7 @@ MARKUP_PATH = args.markup_path
 MODEL_PATH = args.model_path
 RESULT_PATH = args.result_path
 METRICS = args.metrics
+THRESHOLD = min(1.0, max(0.0, args.threshold))
 # TODO
 #LOG_DIR = args.logs
 
@@ -81,7 +86,11 @@ def main():
         image = open_image(image_name)
         faces = crop_faces(image, markup_df[CROP_COLS].values)
         faces = preprocess_faces(faces)
-        faces_classes = np.argmax(model.predict(faces), axis=-1)
+        predicted = model.predict(faces)
+        max_classes = np.argmax(predicted, axis=-1)
+        max_probs = np.amax(predicted, axis=-1)
+
+        faces_classes = max_classes * (max_probs > THRESHOLD)
 
         if METRICS:
             y_pred += list(faces_classes)
